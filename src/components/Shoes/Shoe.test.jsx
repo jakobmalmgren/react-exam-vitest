@@ -77,6 +77,7 @@ describe("Shoe", () => {
       const input = screen.getByLabelText(`Shoe size / person ${index + 1}`);
       expect(input).toBeInTheDocument();
     });
+    ///................
     // Fyll i alla skostorlekar
     await user.type(screen.getByLabelText("Shoe size / person 1"), "42");
     await user.type(screen.getByLabelText("Shoe size / person 2"), "39");
