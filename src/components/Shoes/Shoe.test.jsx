@@ -1,5 +1,5 @@
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import Shoes from "./Shoes";
 import { render, screen } from "@testing-library/react";
 
@@ -89,5 +89,19 @@ describe("Shoe", () => {
 
     // Kontrollera att updateSize-funktionen har anropats
     expect(mockUpdatedSize).toHaveBeenCalled();
+  });
+
+  //12. Användaren ska kunna ta bort ett tidigare valt fält för skostorlek
+  // genom att klicka på en "-"-knapp vid varje spelare.
+  it("should work if the user click on the - button, then the shoes dissapears", async () => {
+    const user = userEvent.setup();
+    const mockRemoveShoes = vi.fn();
+    const shoes = [{ id: "shoe-1", size: "45" }];
+    render(<Shoes removeShoe={mockRemoveShoes} shoes={shoes} />);
+
+    const removeBtn = screen.getByRole("button", { name: "-" });
+    await user.click(removeBtn);
+
+    expect(mockRemoveShoes).toHaveBeenCalledWith("shoe-1");
   });
 });

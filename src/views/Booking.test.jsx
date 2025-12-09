@@ -261,4 +261,8 @@ describe("Booking", () => {
       screen.getByText("Det får max vara 4 spelare per bana")
     ).toBeInTheDocument();
   });
+  //11. Systemet ska visa en översikt där användaren kan kontrollera de
+  // valda skostorlekarna
+  //  för varje spelare innan bokningen slutförs.
+  // it("should be possible for the user to see the picked shoesizes for every player before booking", () => {});
 });
