@@ -6,8 +6,8 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import Booking from "./Booking";
-import Confirmation from "./Confirmation";
+// import Booking from "./Booking";
+// import Confirmation from "./Confirmation";
 import { MemoryRouter, useNavigate } from "react-router-dom";
 
 const mockNavigate = vi.fn();
@@ -20,7 +20,13 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+import Booking from "./Booking";
+import Confirmation from "./Confirmation";
+
 describe("Booking", () => {
+  // beforeEach(() => {
+  //   mockNavigate.mockClear();
+  // });
   // 3.Användaren ska kunna reservera en eller flera banor beroende på antal spelare.
   // kollar de i 2 test, ett error för de är för många personer registrerade beroende på antalet banor
   // sen ett där de fungerar och inget felmeddelande kommer fram
@@ -406,7 +412,25 @@ describe("Booking", () => {
       </MemoryRouter>
     );
 
+    const dateInput = screen.getByLabelText(/Date/i);
+    const timeInput = screen.getByLabelText(/Time/i);
+    const lanesInput = screen.getByLabelText(/Number of lanes/i);
+    const peopleInput = screen.getByLabelText(/Number of awesome bowlers/i);
+    const addShoeButton = screen.getByRole("button", { name: "+" });
     const button = screen.getByRole("button", { name: /strIIIIIike!/i });
+
+    await user.type(dateInput, "2025-12-08");
+    await user.type(timeInput, "18:00");
+    await user.clear(lanesInput);
+    await user.type(lanesInput, "1");
+    await user.clear(peopleInput);
+    await user.type(peopleInput, "1");
+
+    // Lägg till en sko
+    await user.click(addShoeButton);
+    const shoeInput = screen.getByLabelText("Shoe size / person 1");
+    await user.type(shoeInput, "42");
+
     await user.click(button);
 
     await waitFor(() => {
