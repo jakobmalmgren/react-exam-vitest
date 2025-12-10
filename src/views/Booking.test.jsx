@@ -1,13 +1,29 @@
-import { getByLabelText, render, screen } from "@testing-library/react";
+import {
+  getByLabelText,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import Booking from "./Booking";
-import { MemoryRouter } from "react-router-dom";
+import Confirmation from "./Confirmation";
+import { MemoryRouter, useNavigate } from "react-router-dom";
 
-// 3.Användaren ska kunna reservera en eller flera banor beroende på antal spelare.
-// kollar de i 2 test, ett error för de är för många personer registrerade beroende på antalet banor
-// sen ett där de fungerar och inget felmeddelande kommer fram
+const mockNavigate = vi.fn();
+
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
 describe("Booking", () => {
+  // 3.Användaren ska kunna reservera en eller flera banor beroende på antal spelare.
+  // kollar de i 2 test, ett error för de är för många personer registrerade beroende på antalet banor
+  // sen ett där de fungerar och inget felmeddelande kommer fram
   it("shows error if there are more players then max amount on a lane, 5 players, 1 lane", async () => {
     render(
       <MemoryRouter>
@@ -46,8 +62,15 @@ describe("Booking", () => {
     );
     expect(errorMessage).toBeInTheDocument();
   });
+  // 3.Användaren ska kunna reservera en eller flera banor beroende på antal spelare.
+  // kollar de i 2 test, ett error för de är för många personer registrerade beroende på antalet banor
+  // sen ett där de fungerar och inget felmeddelande kommer fram
+  // & acceptance kriteriet:
 
-  it("should accept booking if players match amount that accepted on the lanes, 8 players, 2 lanes", async () => {
+  //19. Användaren ska kunna navigera från bokningsvyn till bekräftelsevyn när bokningen är klar.
+
+  it("should accept booking if players match amount that accepted on the lanes, 8 players, 2 lanes and it should navigate from bookingview to confirmation view", async () => {
+    // vi.mocked(useNavigate);
     render(
       <MemoryRouter>
         <Booking />
@@ -84,6 +107,13 @@ describe("Booking", () => {
       /Det får max vara 4 spelare per bana/i
     );
     expect(errorMessage).not.toBeInTheDocument();
+
+    // expect(mockNavigate).toHaveBeenCalledWith(
+    //   "/confirmation",
+    //   expect.objectContaining({
+    //     state: expect.any(Object),
+    //   })
+    // );
   });
   // 9. VG - Om användaren försöker slutföra bokningen utan att ange skostorlek för en spelare som har valt att boka skor,
   // ska systemet visa ett felmeddelande och be om att skostorleken anges.
@@ -261,8 +291,193 @@ describe("Booking", () => {
       screen.getByText("Det får max vara 4 spelare per bana")
     ).toBeInTheDocument();
   });
-  //11. Systemet ska visa en översikt där användaren kan kontrollera de
-  // valda skostorlekarna
-  //  för varje spelare innan bokningen slutförs.
-  // it("should be possible for the user to see the picked shoesizes for every player before booking", () => {});
+  //4. VG - Ifall användaren inte fyller i något av ovanstående så ska
+  // ett felmeddelande visas. 4-5 testfall! Gäller (tid, datum, banor och antalet spelare) TESTFALL 1
+  it("should give an error if no amount of people are added", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Booking />
+      </MemoryRouter>
+    );
+    const button = screen.getByRole("button", { name: "strIIIIIike!" });
+
+    const peopleInput = screen.getByLabelText("Number of awesome bowlers");
+    const lanesInput = screen.getByLabelText("Number of lanes");
+    const dateInput = screen.getByLabelText("Date");
+    const timeInput = screen.getByLabelText("Time");
+
+    await user.type(peopleInput, "0");
+    await user.type(lanesInput, "1");
+    await user.type(dateInput, "2025-05-06");
+    await user.type(timeInput, "10:00");
+    await user.click(button);
+
+    expect(
+      screen.getByText("Alla fälten måste vara ifyllda")
+    ).toBeInTheDocument();
+  });
+  //4. VG - Ifall användaren inte fyller i något av ovanstående så ska
+  // ett felmeddelande visas. 4-5 testfall! Gäller (tid, datum, banor och antalet spelare) TESTFALL 2
+  it("should give an error if no amount of lanes are added", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Booking />
+      </MemoryRouter>
+    );
+    const button = screen.getByRole("button", { name: "strIIIIIike!" });
+
+    const peopleInput = screen.getByLabelText("Number of awesome bowlers");
+    const lanesInput = screen.getByLabelText("Number of lanes");
+    const dateInput = screen.getByLabelText("Date");
+    const timeInput = screen.getByLabelText("Time");
+
+    await user.type(peopleInput, "1");
+    await user.type(lanesInput, "0");
+    await user.type(dateInput, "2025-05-06");
+    await user.type(timeInput, "10:00");
+    await user.click(button);
+
+    expect(
+      screen.getByText("Alla fälten måste vara ifyllda")
+    ).toBeInTheDocument();
+  });
+  //4. VG - Ifall användaren inte fyller i något av ovanstående så ska
+  // ett felmeddelande visas. 4-5 testfall! Gäller (tid, datum, banor och antalet spelare) TESTFALL 3
+  it("should give an error if no amount of time is added", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Booking />
+      </MemoryRouter>
+    );
+    const button = screen.getByRole("button", { name: "strIIIIIike!" });
+
+    const peopleInput = screen.getByLabelText("Number of awesome bowlers");
+    const lanesInput = screen.getByLabelText("Number of lanes");
+    const dateInput = screen.getByLabelText("Date");
+    const timeInput = screen.getByLabelText("Time");
+
+    await user.type(peopleInput, "1");
+    await user.type(lanesInput, "1");
+    await user.type(dateInput, "2025-05-06");
+    await user.clear(timeInput);
+    await user.click(button);
+
+    expect(
+      screen.getByText("Alla fälten måste vara ifyllda")
+    ).toBeInTheDocument();
+  });
+  //4. VG - Ifall användaren inte fyller i något av ovanstående så ska
+  // ett felmeddelande visas. 4-5 testfall! Gäller (tid, datum, banor och antalet spelare) TESTFALL 4
+  it("should give an error if no amount of date is added", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Booking />
+      </MemoryRouter>
+    );
+    const button = screen.getByRole("button", { name: "strIIIIIike!" });
+
+    const peopleInput = screen.getByLabelText("Number of awesome bowlers");
+    const lanesInput = screen.getByLabelText("Number of lanes");
+    const dateInput = screen.getByLabelText("Date");
+    const timeInput = screen.getByLabelText("Time");
+
+    await user.type(peopleInput, "1");
+    await user.type(lanesInput, "1");
+    await user.clear(dateInput);
+    await user.type(timeInput, "10:00");
+    await user.click(button);
+
+    expect(
+      screen.getByText("Alla fälten måste vara ifyllda")
+    ).toBeInTheDocument();
+  });
+  //15. Användaren ska kunna slutföra bokningen genom att klicka på en "slutför bokning"-knapp.
+  // jag tänker de räcker att checka att man navigerar till confirmation sidan för då är allt godkänt i
+  // bookingsidan o då räknas de som slutförd
+  it("should be able for the user to finish the bookingreservation", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Booking />
+      </MemoryRouter>
+    );
+
+    const button = screen.getByRole("button", { name: /strIIIIIike!/i });
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/confirmation",
+        expect.objectContaining({ state: expect.any(Object) })
+      );
+    });
+  });
+  //16. Systemet ska generera ett bokningsnummer och visa detta till användaren efter
+  //  att bokningen är slutförd.
+  it("should show a booking number after completing the booking", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Booking />
+      </MemoryRouter>
+    );
+    // Hämta inputs
+    const dateInput = screen.getByLabelText(/Date/i);
+    const timeInput = screen.getByLabelText(/Time/i);
+    const lanesInput = screen.getByLabelText(/Number of lanes/i);
+    const peopleInput = screen.getByLabelText(/Number of awesome bowlers/i);
+    const addShoeButton = screen.getByRole("button", { name: "+" });
+    const bookButton = screen.getByRole("button", { name: /strIIIIIike!/i });
+
+    // Fyll i bokningen
+    await user.type(dateInput, "2025-12-08");
+    await user.type(timeInput, "18:00");
+    await user.clear(lanesInput);
+    await user.type(lanesInput, "1");
+    await user.clear(peopleInput);
+    await user.type(peopleInput, "1");
+    await user.click(addShoeButton);
+    const shoe1Input = screen.getByLabelText("Shoe size / person 1");
+    await user.type(shoe1Input, "42");
+    await user.click(bookButton);
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/confirmation",
+        expect.objectContaining({
+          state: expect.objectContaining({
+            confirmationDetails: expect.objectContaining({
+              bookingId: "12345",
+            }),
+          }),
+        })
+      );
+    });
+    const confirmationState = {
+      confirmationDetails: {
+        bookingId: "12345",
+        when: "2025-12-08T18:00",
+        lanes: 1,
+        people: 1,
+        shoes: ["42"],
+        price: 1000,
+      },
+    };
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          { pathname: "/confirmation", state: confirmationState },
+        ]}
+      >
+        <Confirmation />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByDisplayValue("12345")).toBeInTheDocument();
+  });
 });

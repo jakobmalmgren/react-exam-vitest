@@ -4,8 +4,13 @@ import Shoes from "./Shoes";
 import { render, screen } from "@testing-library/react";
 
 describe("Shoe", () => {
-  // 6. Användaren ska kunna ange skostorlek för varje spelare.
-  it("should work for the user to select shoe size for every player", async () => {
+  // 6. Användaren ska kunna ange skostorlek för varje spelare. &
+
+  // 11. Systemet ska visa en översikt där användaren kan kontrollera de
+  // valda skostorlekarna för varje spelare innan bokningen slutförs.
+  // Finns ju ingen UI för visa valda storlekar MEN i detta testcase ex
+  // visar jag "ja skriver in ett värde SEN testar så värdet verkligen är de värdet"
+  it("should work for the user to select shoe size for every player and show the overview", async () => {
     const user = userEvent.setup();
 
     const mockUpdatedSize = vi.fn();
@@ -34,7 +39,10 @@ describe("Shoe", () => {
     expect(mockUpdatedSize).toHaveBeenCalled();
     expect(shoe1Input).toHaveValue("42");
     expect(shoe2Input).toHaveValue("39");
+    expect(shoe1Input).toBeInTheDocument();
+    expect(shoe2Input).toBeInTheDocument();
   });
+
   // 7. Användaren ska kunna ändra skostorlek för varje spelare
   it("should allow the player to change shoe size", async () => {
     const user = userEvent.setup();
