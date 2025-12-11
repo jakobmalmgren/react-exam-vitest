@@ -27,6 +27,7 @@ function Confirmation() {
           />
           <Input
             label="Who"
+            data-testid="people-input"
             type="text"
             customClass="confirmation__input"
             defaultValue={confirmation.people}
@@ -34,6 +35,10 @@ function Confirmation() {
           />
           <Input
             label="Lanes"
+            // la till data-testid för du har ej skickat med name props till
+            // Input komponenten o då kan ja ej nå de via getbylabeltext ex..
+            // så för o nå de la ja till det,
+            data-testid="lanes-input"
             type="text"
             customClass="confirmation__input"
             defaultValue={confirmation.lanes}

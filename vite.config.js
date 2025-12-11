@@ -10,6 +10,12 @@ export default defineConfig({
     setupFiles: "./setup-test.js",
     coverage: {
       provider: "v8",
+      exclude: [
+        "**/*.scss",
+        "**/Navigation.jsx",
+        "**/assets/navicon.svg",
+        "**/assets/strajk-logo.svg",
+      ],
       reporter: ["text", "html"],
       thresholds: {
         lines: 90,

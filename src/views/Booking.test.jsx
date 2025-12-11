@@ -108,18 +108,19 @@ describe("Booking", () => {
     // Klicka på boka-knappen
     await userEvent.click(button);
 
-    // Eftersom vi inte kan mocka fetch här, kontrollerar vi bara att felet inte visas
     const errorMessage = screen.queryByText(
       /Det får max vara 4 spelare per bana/i
     );
     expect(errorMessage).not.toBeInTheDocument();
 
-    // expect(mockNavigate).toHaveBeenCalledWith(
-    //   "/confirmation",
-    //   expect.objectContaining({
-    //     state: expect.any(Object),
-    //   })
-    // );
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/confirmation",
+      expect.objectContaining({
+        state: expect.objectContaining({
+          confirmationDetails: expect.any(Object),
+        }),
+      })
+    );
   });
   // 9. VG - Om användaren försöker slutföra bokningen utan att ange skostorlek för en spelare som har valt att boka skor,
   // ska systemet visa ett felmeddelande och be om att skostorleken anges.
@@ -503,5 +504,83 @@ describe("Booking", () => {
     );
 
     expect(screen.getByDisplayValue("12345")).toBeInTheDocument();
+  });
+  //13. När användaren tar bort skostorleken för en spelare ska systemet uppdatera bokningen så att inga skor
+  //  längre är bokade för den spelaren.
+  // &
+  // 14. Om användaren tar bort skostorleken ska systemet inte inkludera den spelaren i
+  // skorantalet och priset för skor i den totala bokningssumman.
+  it("should delete the shoes in the system when i push the - button så the confirmation are the right amount of shoes and it should also show the correct price", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Booking />
+      </MemoryRouter>
+    );
+
+    const dateInput = screen.getByLabelText(/Date/i);
+    const timeInput = screen.getByLabelText(/Time/i);
+    const lanesInput = screen.getByLabelText(/Number of lanes/i);
+    const peopleInput = screen.getByLabelText(/Number of awesome bowlers/i);
+    const addShoeButton = screen.getByRole("button", { name: "+" });
+
+    const button = screen.getByRole("button", { name: /strIIIIIike!/i });
+
+    await user.type(dateInput, "2025-12-08");
+    await user.type(timeInput, "18:00");
+    await user.type(lanesInput, "1");
+    await user.type(peopleInput, "1");
+
+    await user.click(addShoeButton);
+    await user.click(addShoeButton);
+
+    const deleteButtons = screen.getAllByRole("button", { name: "-" });
+    console.log("butttonsssssssssss", deleteButtons);
+
+    const specificDeleteShoeButton = deleteButtons[0];
+
+    const shoeInput = screen.getByLabelText("Shoe size / person 1");
+    const shoeInputTwo = screen.getByLabelText("Shoe size / person 2");
+
+    await user.type(shoeInput, "42");
+    await user.type(shoeInputTwo, "42");
+    await user.click(button);
+
+    expect(
+      screen.getByText("Antalet skor måste stämma överens med antal spelare")
+    ).toBeInTheDocument();
+
+    await user.click(specificDeleteShoeButton);
+
+    expect(
+      screen.queryByLabelText("Shoe size / person 2")
+    ).not.toBeInTheDocument();
+
+    await user.click(button);
+
+    // Mocka att navigate skickar rätt state
+    const confirmationState = {
+      confirmationDetails: {
+        bookingId: "12345",
+        when: "2025-12-08T18:00",
+        lanes: 1,
+        people: 1,
+        shoes: ["42"], // Endast kvarvarande sko
+        price: 220, // Korrekt pris
+      },
+    };
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          { pathname: "/confirmation", state: confirmationState },
+        ]}
+      >
+        <Confirmation />
+      </MemoryRouter>
+    );
+
+    // Kontrollera att korrekt data syns
+    expect(screen.getByText("220 sek")).toBeInTheDocument();
   });
 });

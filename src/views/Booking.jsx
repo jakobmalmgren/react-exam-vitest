@@ -100,6 +100,8 @@ function Booking() {
   }
 
   async function book() {
+    // den ändrade Christoffer
+
     // let errorMessage = "";
 
     // if (!booking.when || !booking.lanes || !booking.time || !booking.people) {
