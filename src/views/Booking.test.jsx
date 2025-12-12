@@ -470,47 +470,29 @@ describe("Booking", () => {
     await user.type(shoe1Input, "42");
     await user.click(bookButton);
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        "/confirmation",
-        expect.objectContaining({
-          state: expect.objectContaining({
-            confirmationDetails: expect.objectContaining({
-              bookingId: "12345",
-            }),
-          }),
-        })
-      );
-    });
-    const confirmationState = {
-      confirmationDetails: {
-        bookingId: "12345",
-        when: "2025-12-08T18:00",
-        lanes: 1,
-        people: 1,
-        shoes: ["42"],
-        price: 1000,
-      },
-    };
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/confirmation",
+      expect.objectContaining({
+        state: expect.objectContaining({
+          confirmationDetails: expect.any(Object),
+        }),
+      })
+    );
 
     render(
-      <MemoryRouter
-        initialEntries={[
-          { pathname: "/confirmation", state: confirmationState },
-        ]}
-      >
+      <MemoryRouter>
         <Confirmation />
       </MemoryRouter>
     );
-
     expect(screen.getByDisplayValue("12345")).toBeInTheDocument();
   });
+
   //13. När användaren tar bort skostorleken för en spelare ska systemet uppdatera bokningen så att inga skor
   //  längre är bokade för den spelaren.
   // &
   // 14. Om användaren tar bort skostorleken ska systemet inte inkludera den spelaren i
   // skorantalet och priset för skor i den totala bokningssumman.
-  it("should delete the shoes in the system when i push the - button så the confirmation are the right amount of shoes and it should also show the correct price", async () => {
+  it("should delete the shoes in the system when i push the - button så the confirmation are the right amount of shoes and it should also show the correct price in Confirmation", async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -535,7 +517,6 @@ describe("Booking", () => {
     await user.click(addShoeButton);
 
     const deleteButtons = screen.getAllByRole("button", { name: "-" });
-    console.log("butttonsssssssssss", deleteButtons);
 
     const specificDeleteShoeButton = deleteButtons[0];
 
@@ -558,29 +539,46 @@ describe("Booking", () => {
 
     await user.click(button);
 
-    // Mocka att navigate skickar rätt state
-    const confirmationState = {
-      confirmationDetails: {
-        bookingId: "12345",
-        when: "2025-12-08T18:00",
-        lanes: 1,
-        people: 1,
-        shoes: ["42"], // Endast kvarvarande sko
-        price: 220, // Korrekt pris
-      },
-    };
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/confirmation",
+      expect.objectContaining({
+        state: expect.objectContaining({
+          confirmationDetails: expect.any(Object),
+        }),
+      })
+    );
 
     render(
-      <MemoryRouter
-        initialEntries={[
-          { pathname: "/confirmation", state: confirmationState },
-        ]}
-      >
+      <MemoryRouter>
         <Confirmation />
       </MemoryRouter>
     );
 
-    // Kontrollera att korrekt data syns
-    expect(screen.getByText("220 sek")).toBeInTheDocument();
+    expect(await screen.findByText("220 sek")).toBeInTheDocument();
+
+    // // Mocka att navigate skickar rätt state
+    // const confirmationState = {
+    //   confirmationDetails: {
+    //     bookingId: "12345",
+    //     when: "2025-12-08T18:00",
+    //     lanes: 1,
+    //     people: 1,
+    //     shoes: ["42"], // Endast kvarvarande sko
+    //     price: 220, // Korrekt pris
+    //   },
+    // };
+
+    // render(
+    //   <MemoryRouter
+    //     initialEntries={[
+    //       { pathname: "/confirmation", state: confirmationState },
+    //     ]}
+    //   >
+    //     <Confirmation />
+    //   </MemoryRouter>
+    // );
+
+    // // Kontrollera att korrekt data syns
+    // expect(screen.getByText("220 sek")).toBeInTheDocument();
   });
 });

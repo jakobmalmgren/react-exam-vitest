@@ -1,15 +1,11 @@
 import { http, HttpResponse } from "msw";
 
 export const handlers = [
-  // POST /booking
   http.post(
     "https://731xy9c2ak.execute-api.eu-north-1.amazonaws.com/booking",
     async ({ request }) => {
       const body = await request.json();
-      console.log("Body från bokning:", body);
-
-      // Du kan validera body här om du vill
-      // t.ex. kolla antal banor, spelare, skor osv.
+      // console.log("Body från bokning:", body);
 
       const confirmation = {
         bookingDetails: {
@@ -18,7 +14,7 @@ export const handlers = [
           people: body.people,
           shoes: body.shoes,
           bookingId: "12345",
-          price: 1000,
+          price: body.people * 120 + body.lanes * 100,
         },
       };
 
